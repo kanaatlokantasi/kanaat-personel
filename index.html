@@ -218,7 +218,7 @@ legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--
     <div class="brand">
       <small>Kanaat Lokantası · İnsan kaynakları</small>
       <h1>Personel Başvuruları</h1>
-      <span class="ver" id="appVer">Personel · Sürüm 28 · 27.10.2026</span>
+      <span class="ver" id="appVer">Personel · Sürüm 29 · 27.10.2026</span>
       <div class="acct"><span class="who" id="who"></span><button class="link-btn" id="usersBtn" type="button" hidden>Kullanıcılar</button><button class="link-btn" id="pwBtn" type="button">Şifre</button><button class="link-btn" id="logoutBtn" type="button">Çıkış</button></div>
     </div>
     <div class="top-actions">
@@ -1062,9 +1062,10 @@ function showLogin(msg){
     <p class="err" id="le">${esc(msg||"")}</p><button class="btn primary" type="submit" id="lb">Giriş yap</button></form>
   <button class="link-btn" type="button" id="toSetup" style="justify-self:start">İlk kurulum</button>`);
   $("lf").onsubmit = async e => { e.preventDefault(); const b=$("lb"); b.disabled=true; b.textContent="Giriş yapılıyor…"; $("le").textContent="";
-    try{ await auth.signInWithEmailAndPassword(emailOf($("ln").value), $("lp").value.trim()); }
+    try{ await auth.signInWithEmailAndPassword(emailOf($("ln").value), $("lp").value.trim()); try{ localStorage.setItem("kpAd", cleanName($("ln").value)); }catch(_){} }
     catch(x){ b.disabled=false; b.textContent="Giriş yap"; $("le").textContent=authMsg(x); } };
   $("toSetup").onclick = showSetup;
+  try{ const ad=localStorage.getItem("kpAd"); if(ad){ $("ln").value=ad; $("lp").focus(); } }catch(_){}
 }
 function showSetup(){
   gate(`${gicon}<div><h1>İlk kurulum</h1><div class="sub">Yalnızca yönetici, bir kez. Eski kayıtlar da aktarılır.</div></div>
@@ -1109,7 +1110,12 @@ async function decryptSeed(code){
 
 function stopAll(){ unsubs.forEach(f=>{ try{f()}catch(e){} }); unsubs=[]; rows=[]; bl=[]; people=[]; secrets={}; me=null; myId=null; lastNew=null; }
 async function enter(u){
-  let snap; try{ snap=await db.collection("users").doc(u.uid).get(); }catch(e){ snap=null; }
+  let snap=null, err=null;
+  for(let i=0;i<4 && !snap;i++){ try{ snap=await db.collection("users").doc(u.uid).get(); err=null; }catch(e){ err=e; if(e && e.code==="permission-denied") break; await new Promise(r=>setTimeout(r, 800*(i+1))); } }
+  if(!snap && err && err.code!=="permission-denied"){
+    // bağlantı sorunu: oturumu kapatma, tekrar denet
+    gate(`${gicon}<h1>Personel Başvuruları</h1><p class="hint" style="margin:0">İnternet bağlantısı kurulamadı. Oturumunuz açık; bağlantı gelince tekrar deneyin.</p><button class="btn primary" type="button" id="retryBtn">Tekrar dene</button>`);
+    $("retryBtn").onclick = () => enter(u); return; }
   if(!snap || !snap.exists){ stopAll(); try{ await auth.signOut(); }catch(_){} showLogin("Bu hesabın erişimi yok ya da kaldırıldı. Yöneticiyle görüşün."); return; }
   const d=snap.data(); me={uid:u.uid, name:d.name, role:d.role}; myId=u.uid;
   $("gate").hidden=true; $("app").hidden=false; $("newBtn").disabled=false; $("dbNotice").hidden=true;
@@ -1190,6 +1196,8 @@ async function boot(){
   try{ for(const m of ["app","auth","firestore"]) await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-${m}-compat.js`); }
   catch(e){ gate(`<h1>Personel Başvuruları</h1><p class="err">Bağlantı kurulamadı. İnternetinizi kontrol edip sayfayı yenileyin.</p>`); return; }
   firebase.initializeApp(FB_CFG); auth=firebase.auth(); db=firebase.firestore();
+  // oturum bu cihazda kalıcı: kullanıcı "Çıkış" diyene kadar açık kalır
+  try{ await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL); }catch(e){}
   try{ db.settings({ignoreUndefinedProperties:true, merge:true}); }catch(e){}
   auth.onAuthStateChanged(u => { if(setupBusy) return; if(u){ if(!me || me.uid!==u.uid) enter(u); } else { stopAll(); showLogin(); } });
 }
