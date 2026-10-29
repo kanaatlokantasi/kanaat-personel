@@ -218,7 +218,7 @@ legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--
     <div class="brand">
       <small>Kanaat Lokantası · İnsan kaynakları</small>
       <h1>Personel Başvuruları</h1>
-      <span class="ver" id="appVer">Personel · Sürüm 30 · 27.10.2026</span>
+      <span class="ver" id="appVer">Personel · Sürüm 31 · 29.10.2026</span>
       <div class="acct"><span class="who" id="who"></span><button class="link-btn" id="usersBtn" type="button" hidden>Kullanıcılar</button><button class="link-btn" id="pwBtn" type="button">Şifre</button><button class="link-btn" id="logoutBtn" type="button">Çıkış</button></div>
     </div>
     <div class="top-actions">
@@ -983,6 +983,9 @@ async function kartPdf(){
     const photoW=250, photoH=310, textMax = W-2*M-(photo?photoW+40:0);
     x.fillStyle=INK; x.font=`800 64px ${FD}`;
     const tl = wrap(title, textMax); tl.forEach(l=>{ x.fillText(l, M, y+50); y+=74; });
+    const dy = parseInt($("dogumYili").value,10), nowY = new Date().getFullYear();
+    if(dy>1900 && dy<=nowY){ const age = nowY - dy; x.fillStyle=MUTED; x.font=`700 30px ${F}`;
+      x.fillText(`${age} yaşında  ·  ${dy} doğumlu`, M, y+30); y+=50; }
     const startY = 230;
     if(photo){ const px=W-M-photoW, py=startY-20; x.save(); x.beginPath(); x.rect(px,py,photoW,photoH); x.clip();
       const sc=Math.max(photoW/photo.width, photoH/photo.height); const dw=photo.width*sc, dh=photo.height*sc;
