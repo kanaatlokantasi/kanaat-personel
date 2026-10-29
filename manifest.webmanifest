@@ -1,15 +1,17 @@
 {
   "name": "Kanaat Personel Başvuruları",
   "short_name": "Personel",
-  "id": "./",
-  "start_url": "./",
-  "scope": "./",
+  "description": "Kanaat Lokantası personel başvuru takibi",
+  "id": "/kanaat-personel/",
+  "start_url": "/kanaat-personel/",
+  "scope": "/kanaat-personel/",
   "display": "standalone",
-  "background_color": "#F3F5F3",
+  "background_color": "#F5B700",
   "theme_color": "#0E6A5F",
   "lang": "tr",
   "icons": [
-    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
-    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
   ]
 }
