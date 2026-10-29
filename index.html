@@ -203,6 +203,11 @@ legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--
 .person .psup{font-size:13px;color:var(--muted)}
 .newcode{background:var(--accent-soft);border-radius:10px;padding:12px;display:grid;gap:10px;margin-bottom:12px}
 .newcode .msg{white-space:pre-wrap;font-size:14px;background:var(--surface);border-radius:8px;padding:10px;overflow-wrap:anywhere}
+.lb{position:fixed;inset:0;z-index:80;background:rgba(8,14,12,.88);display:grid;place-items:center;padding:calc(56px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));cursor:zoom-out}
+.lb img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.5);object-fit:contain}
+.lb .lbx{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:999px;width:44px;height:44px;font-size:26px;line-height:1;cursor:pointer}
+.lb .lbn{position:absolute;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-weight:700;font-size:16px}
+.avatar img{cursor:zoom-in}
 .updbar{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:70;background:var(--ink);color:var(--bg);border-radius:10px;padding:8px 10px 8px 14px;display:flex;gap:10px;align-items:center;font-weight:700;font-size:14px;max-width:calc(100% - 32px)}
 .updbar .btn{padding:6px 12px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}}}
@@ -218,7 +223,7 @@ legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--
     <div class="brand">
       <small>Kanaat Lokantası · İnsan kaynakları</small>
       <h1>Personel Başvuruları</h1>
-      <span class="ver" id="appVer">Personel · Sürüm 32 · 29.10.2026</span>
+      <span class="ver" id="appVer">Personel · Sürüm 33 · 29.10.2026</span>
       <div class="acct"><span class="who" id="who"></span><button class="link-btn" id="usersBtn" type="button" hidden>Kullanıcılar</button><button class="link-btn" id="pwBtn" type="button">Şifre</button><button class="link-btn" id="logoutBtn" type="button">Çıkış</button></div>
     </div>
     <div class="top-actions">
@@ -526,6 +531,7 @@ legend{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--
     </form>
   </div>
 </aside>
+<div class="lb" id="lb" hidden role="dialog" aria-label="Fotoğraf"><button class="lbx" type="button" id="lbx" aria-label="Kapat">×</button><img id="lbImg" alt=""><div class="lbn" id="lbName"></div></div>
 <div class="toast" id="toast" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -901,6 +907,13 @@ function render(){
         </div>
       </div></button>`; }).join("");
 }
+// fotoğrafı büyüt
+function openLb(src, name){ if(!src) return; $("lbImg").src=src; $("lbName").textContent=name||""; $("lb").hidden=false; }
+function closeLb(){ $("lb").hidden=true; $("lbImg").removeAttribute("src"); }
+$("lb").addEventListener("click", closeLb);
+document.addEventListener("keydown", e => { if(e.key==="Escape" && !$("lb").hidden){ e.stopImmediatePropagation(); closeLb(); } }, true);
+$("photoPrev").addEventListener("click", () => { const im=$("photoPrev").querySelector("img"); if(im) openLb(im.src, $("adSoyad").value); });
+$("list").addEventListener("click", e => { const im=e.target.closest(".avatar img"); if(im){ e.stopImmediatePropagation(); e.stopPropagation(); const c=im.closest(".card"); const rr=c&&rows.find(x=>x.id===c.dataset.id); openLb(im.src, rr?rr.data.adSoyad:""); return; } }, true);
 $("list").addEventListener("click", e => { const c=e.target.closest(".card"); if(!c) return; const r=rows.find(x=>x.id===c.dataset.id); if(r) openSheet(r); });
 
 // WhatsApp'ta paylaş
